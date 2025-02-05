@@ -73,6 +73,9 @@ const startButton = document.getElementById('startButton');
 let canShoot = true; // Флаг для ограничения частоты стрельбы
 const shootCooldown = 500; // Время перезарядки в миллисекундах
 
+let shootIntervalId = null; // Идентификатор интервала для стрельбы
+let spawnIntervalId = null; // Идентификатор интервала для спавна врагов
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -238,11 +241,15 @@ function startGame() {
   startButton.style.display = 'none'; // Скрываем кнопку Start
   canvas.style.display = 'block'; // Показываем canvas
   gameLoop();
-  setInterval(shootBullet, shootCooldown); // Запускаем автоматическую стрельбу
-  setInterval(spawnEnemy, 1000); // Запускаем спавн врагов
+  shootIntervalId = setInterval(shootBullet, shootCooldown); // Запускаем автоматическую стрельбу
+  spawnIntervalId = setInterval(spawnEnemy, 1000); // Запускаем спавн врагов
 }
 
 function restartGame() {
+  // Останавливаем интервалы стрельбы и спавна врагов
+  if (shootIntervalId) clearInterval(shootIntervalId);
+  if (spawnIntervalId) clearInterval(spawnIntervalId);
+
   player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
