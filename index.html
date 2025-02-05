@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vampire Survival</title>
+<title>Badass_Robotic</title>
 <style>
   body {
     margin: 0;
@@ -94,11 +94,7 @@ function updatePlayerAngle(event) {
   player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
 }
 
-function shootBullet(event) {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
-  player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+function shootBullet() {
   bullets.push({
     x: player.x,
     y: player.y,
@@ -226,21 +222,17 @@ function handleTouchMove(event) {
   updatePlayerAngle(touch);
 }
 
-function handleTouchEnd(event) {
-  event.preventDefault(); // Prevent default touchend behavior
-  const touch = event.changedTouches[0];
-  shootBullet(touch);
-}
-
 // Add event listeners for touch events
 canvas.addEventListener('touchmove', handleTouchMove);
-canvas.addEventListener('touchend', handleTouchEnd);
 
 // Add event listeners for mouse events
 canvas.addEventListener('mousemove', updatePlayerAngle);
-canvas.addEventListener('click', shootBullet);
 
-setInterval(spawnEnemy, 1000);
+// Set interval for automatic shooting
+setInterval(shootBullet, 500); // Shoot every 500 milliseconds
+
+// Set interval for spawning enemies
+setInterval(spawnEnemy, 1000); // Spawn enemy every 1000 milliseconds (1 second)
 
 // Prevent scrolling on mobile devices
 document.body.addEventListener('touchmove', function(event) {
