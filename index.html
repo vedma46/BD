@@ -17,6 +17,18 @@
   }
   canvas {
     border: 1px solid #fff;
+    display: none; /* Скрываем canvas по умолчанию */
+  }
+  #startButton {
+    position: absolute;
+    padding: 20px 40px;
+    font-size: 24px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    z-index: 10;
   }
   #restartButton {
     position: absolute;
@@ -32,6 +44,7 @@
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+<button id="startButton" onclick="startGame()">Start Game</button>
 <button id="restartButton" onclick="restartGame()">Restart Game</button>
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -55,6 +68,7 @@ let enemies = [];
 let score = 0;
 let gameOver = false;
 const restartButton = document.getElementById('restartButton');
+const startButton = document.getElementById('startButton');
 
 let canShoot = true; // Флаг для ограничения частоты стрельбы
 const shootCooldown = 500; // Время перезарядки в миллисекундах
@@ -220,6 +234,14 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+function startGame() {
+  startButton.style.display = 'none'; // Скрываем кнопку Start
+  canvas.style.display = 'block'; // Показываем canvas
+  gameLoop();
+  setInterval(shootBullet, shootCooldown); // Запускаем автоматическую стрельбу
+  setInterval(spawnEnemy, 1000); // Запускаем спавн врагов
+}
+
 function restartGame() {
   player = {
     x: canvas.width / 2,
@@ -237,7 +259,8 @@ function restartGame() {
   gameOver = false;
   restartButton.style.display = 'none';
   canShoot = true; // Сброс флага стрельбы
-  gameLoop();
+  startButton.style.display = 'block'; // Показываем кнопку Start
+  canvas.style.display = 'none'; // Скрываем canvas
 }
 
 function handleMouseMove(event) {
@@ -256,12 +279,6 @@ canvas.addEventListener('mousemove', handleMouseMove);
 // Add event listeners for touch events
 canvas.addEventListener('touchmove', handleTouchMove);
 
-// Set interval for automatic shooting
-setInterval(shootBullet, shootCooldown); // Shoot every shootCooldown milliseconds
-
-// Set interval for spawning enemies
-setInterval(spawnEnemy, 1000); // Spawn enemy every 1000 milliseconds (1 second)
-
 // Prevent scrolling on mobile devices
 document.body.addEventListener('touchmove', function(event) {
   if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
@@ -269,7 +286,21 @@ document.body.addEventListener('touchmove', function(event) {
   }
 }, { passive: false });
 
-gameLoop();
+// Функция для центрирования кнопки Start
+function centerStartButton() {
+  startButton.style.top = `${(canvas.height - startButton.offsetHeight) / 2}px`;
+  startButton.style.left = `${(canvas.width - startButton.offsetWidth) / 2}px`;
+}
+
+// Центрируем кнопку Start при загрузке страницы
+window.addEventListener('load', centerStartButton);
+
+// Перерасполагаем кнопку Start при изменении размера окна
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth - 20;
+  canvas.height = window.innerHeight - 20;
+  centerStartButton();
+});
 </script>
 </body>
 </html>
