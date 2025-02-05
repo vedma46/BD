@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Badass_Robotic</title>
+<title>Vampire Survival</title>
 <style>
   body {
     margin: 0;
@@ -42,9 +42,12 @@ canvas.height = window.innerHeight - 20;
 let player = {
   x: canvas.width / 2,
   y: canvas.height / 2,
+  targetX: canvas.width / 2,
+  targetY: canvas.height / 2,
   size: 20,
   color: 'red',
-  angle: 0
+  angle: 0,
+  speed: 0.02 // Уменьшаем скорость для более медленного движения
 };
 
 let bullets = [];
@@ -52,6 +55,9 @@ let enemies = [];
 let score = 0;
 let gameOver = false;
 const restartButton = document.getElementById('restartButton');
+
+let canShoot = true; // Флаг для ограничения частоты стрельбы
+const shootCooldown = 500; // Время перезарядки в миллисекундах
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -87,22 +93,32 @@ function spawnEnemy() {
   });
 }
 
-function updatePlayerAngle(event) {
+function updatePlayerPosition(event) {
   const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
-  player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+  player.targetX = event.clientX - rect.left;
+  player.targetY = event.clientY - rect.top;
+  player.angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
 }
 
 function shootBullet() {
+  if (!canShoot) return;
+  canShoot = false;
+
+  // Вычисляем угол стрельбы в противоположную сторону от курсора
+  const shootAngle = player.angle + Math.PI;
+
   bullets.push({
     x: player.x,
     y: player.y,
     size: 5,
     color: 'yellow',
     speed: 10,
-    angle: player.angle
+    angle: shootAngle
   });
+
+  setTimeout(() => {
+    canShoot = true;
+  }, shootCooldown);
 }
 
 function updateBullets() {
@@ -189,6 +205,10 @@ function gameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Интерполяция движения персонажа к целевой позиции
+  player.x += (player.targetX - player.x) * player.speed;
+  player.y += (player.targetY - player.y) * player.speed;
+
   drawPlayer();
   drawBullets();
   drawEnemies();
@@ -204,32 +224,40 @@ function restartGame() {
   player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
+    targetX: canvas.width / 2,
+    targetY: canvas.height / 2,
     size: 20,
     color: 'red',
-    angle: 0
+    angle: 0,
+    speed: 0.02 // Уменьшаем скорость для более медленного движения
   };
   bullets = [];
   enemies = [];
   score = 0;
   gameOver = false;
   restartButton.style.display = 'none';
+  canShoot = true; // Сброс флага стрельбы
   gameLoop();
 }
 
-function handleTouchMove(event) {
-  event.preventDefault(); // Prevent default touchmove behavior
-  const touch = event.touches[0];
-  updatePlayerAngle(touch);
+function handleMouseMove(event) {
+  updatePlayerPosition(event);
 }
+
+function handleTouchMove(event) {
+  event.preventDefault();
+  const touch = event.touches[0];
+  updatePlayerPosition(touch);
+}
+
+// Add event listeners for mouse events
+canvas.addEventListener('mousemove', handleMouseMove);
 
 // Add event listeners for touch events
 canvas.addEventListener('touchmove', handleTouchMove);
 
-// Add event listeners for mouse events
-canvas.addEventListener('mousemove', updatePlayerAngle);
-
 // Set interval for automatic shooting
-setInterval(shootBullet, 500); // Shoot every 500 milliseconds
+setInterval(shootBullet, shootCooldown); // Shoot every shootCooldown milliseconds
 
 // Set interval for spawning enemies
 setInterval(spawnEnemy, 1000); // Spawn enemy every 1000 milliseconds (1 second)
