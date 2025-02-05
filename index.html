@@ -87,13 +87,18 @@ function spawnEnemy() {
   });
 }
 
-function updatePlayerAngle() {
-  const mouseX = event.clientX;
-  const mouseY = event.clientY;
+function updatePlayerAngle(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
   player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
 }
 
-function shootBullet() {
+function shootBullet(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+  player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
   bullets.push({
     x: player.x,
     y: player.y,
@@ -215,9 +220,34 @@ function restartGame() {
   gameLoop();
 }
 
-setInterval(spawnEnemy, 1000);
+function handleTouchMove(event) {
+  event.preventDefault(); // Prevent default touchmove behavior
+  const touch = event.touches[0];
+  updatePlayerAngle(touch);
+}
+
+function handleTouchEnd(event) {
+  event.preventDefault(); // Prevent default touchend behavior
+  const touch = event.changedTouches[0];
+  shootBullet(touch);
+}
+
+// Add event listeners for touch events
+canvas.addEventListener('touchmove', handleTouchMove);
+canvas.addEventListener('touchend', handleTouchEnd);
+
+// Add event listeners for mouse events
 canvas.addEventListener('mousemove', updatePlayerAngle);
 canvas.addEventListener('click', shootBullet);
+
+setInterval(spawnEnemy, 1000);
+
+// Prevent scrolling on mobile devices
+document.body.addEventListener('touchmove', function(event) {
+  if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+    event.preventDefault();
+  }
+}, { passive: false });
 
 gameLoop();
 </script>
