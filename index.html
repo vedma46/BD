@@ -8,7 +8,7 @@
   body {
     margin: 0;
     overflow: hidden;
-    background-color: #000;
+    background-color: #111;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -58,7 +58,7 @@ let player = {
   targetX: canvas.width / 2,
   targetY: canvas.height / 2,
   size: 10,
-  color: 'red',
+  color: 'white',
   angle: 0,
   speed: 0.025
 };
@@ -139,7 +139,7 @@ function shootBullet() {
       x: player.x,
       y: player.y,
       size: 5,
-      color: '#86dc12',
+      color: 'yellow',
       speed: 10,
       angle: shootAngle - angleOffset
     });
