@@ -8,7 +8,7 @@
   body {
     margin: 0;
     overflow: hidden;
-    background-color: #222;
+    background-color: #000;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,7 +17,7 @@
   }
   canvas {
     border: 1px solid #fff;
-    display: none; /* Скрываем canvas по умолчанию */
+    display: none;
   }
   #startButton {
     position: absolute;
@@ -57,10 +57,10 @@ let player = {
   y: canvas.height / 2,
   targetX: canvas.width / 2,
   targetY: canvas.height / 2,
-  size: 10, // Уменьшаем размер игрока
+  size: 10,
   color: 'red',
   angle: 0,
-  speed: 0.025 // Увеличиваем скорость для более быстрого движения
+  speed: 0.025
 };
 
 let bullets = [];
@@ -70,19 +70,19 @@ let gameOver = false;
 const restartButton = document.getElementById('restartButton');
 const startButton = document.getElementById('startButton');
 
-let canShoot = true; // Флаг для ограничения частоты стрельбы
-const shootCooldown = 200; // Время перезарядки в миллисекундах (изменено на 200)
+let canShoot = true;
+const shootCooldown = 200;
 
-let shootIntervalId = null; // Идентификатор интервала для стрельбы
-let spawnIntervalId = null; // Идентификатор интервала для спавна врагов
-let spawnIntervalTime = 1000; // Время спавна врагов (начальное значение)
+let shootIntervalId = null;
+let spawnIntervalId = null;
+let spawnIntervalTime = 1000;
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function spawnEnemy() {
-  let side = getRandomInt(0, 3); // 0 - top, 1 - right, 2 - bottom, 3 - left
+  let side = getRandomInt(0, 3);
   let x, y;
   switch (side) {
     case 0:
@@ -105,9 +105,9 @@ function spawnEnemy() {
   enemies.push({
     x: x,
     y: y,
-    size: 10, // Уменьшаем размер врагов
-    color: 'green',
-    speed: 1 + Math.random() // Базовая скорость врагов
+    size: 10,
+    color: 'red',
+    speed: 1 + Math.random()
   });
 }
 
@@ -122,13 +122,11 @@ function shootBullet() {
   if (!canShoot) return;
   canShoot = false;
 
-  // Вычисляем угол стрельбы в противоположную сторону от курсора
+  
   const shootAngle = player.angle + Math.PI;
 
-  // Проверяем, достиг ли игрок отметки в 50 убитых врагов
   if (score >= 50) {
-    // Стрельба в четыре направления: прямо и перпендикулярно
-    const angleOffset = Math.PI / 2; // 90 градусов в радианах (Math.PI / 180 * 90)
+    const angleOffset = Math.PI / 2;
     bullets.push({
       x: player.x,
       y: player.y,
@@ -141,7 +139,7 @@ function shootBullet() {
       x: player.x,
       y: player.y,
       size: 5,
-      color: 'yellow',
+      color: '#86dc12',
       speed: 10,
       angle: shootAngle - angleOffset
     });
@@ -162,13 +160,12 @@ function shootBullet() {
       angle: shootAngle + Math.PI
     });
   } else if (score >= 20) {
-    // Стрельба в два направления: прямо и на 20 градусов в стороны
-    const angleOffset = Math.PI / 9; // 20 градусов в радианах (Math.PI / 180 * 20)
+    const angleOffset = Math.PI / 9;
     bullets.push({
       x: player.x,
       y: player.y,
       size: 5,
-      color: 'yellow',
+      color: '#86dc12',
       speed: 10,
       angle: shootAngle - angleOffset
     });
@@ -176,17 +173,16 @@ function shootBullet() {
       x: player.x,
       y: player.y,
       size: 5,
-      color: 'yellow',
+      color: '#86dc12',
       speed: 10,
       angle: shootAngle + angleOffset
     });
   } else {
-    // Стрельба в одно направление
     bullets.push({
       x: player.x,
       y: player.y,
       size: 5,
-      color: 'yellow',
+      color: '#86dc12',
       speed: 10,
       angle: shootAngle
     });
@@ -224,15 +220,11 @@ function updateEnemies() {
         bullets.splice(bIndex, 1);
         score++;
 
-        // Проверяем достижение апгрейдов
         if (score === 20) {
-          // Апгрейд стрельбы в два направления
           console.log("Upgrade to shoot in two directions");
         } else if (score === 50) {
-          // Апгрейд стрельбы в четыре направления
           console.log("Upgrade to shoot in four directions");
-          // Ускоряем появление врагов
-          spawnIntervalTime = 500; // Уменьшаем интервал появления врагов
+          spawnIntervalTime = 500;
           clearInterval(spawnIntervalId);
           spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime);
         }
@@ -310,15 +302,14 @@ function gameLoop() {
 }
 
 function startGame() {
-  startButton.style.display = 'none'; // Скрываем кнопку Start
-  canvas.style.display = 'block'; // Показываем canvas
+  startButton.style.display = 'none';
+  canvas.style.display = 'block';
   gameLoop();
-  shootIntervalId = setInterval(shootBullet, shootCooldown); // Запускаем автоматическую стрельбу
-  spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime); // Запускаем спавн врагов
+  shootIntervalId = setInterval(shootBullet, shootCooldown);
+  spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime);
 }
 
 function restartGame() {
-  // Останавливаем интервалы стрельбы и спавна врагов
   if (shootIntervalId) clearInterval(shootIntervalId);
   if (spawnIntervalId) clearInterval(spawnIntervalId);
 
@@ -327,20 +318,20 @@ function restartGame() {
     y: canvas.height / 2,
     targetX: canvas.width / 2,
     targetY: canvas.height / 2,
-    size: 10, // Уменьшаем размер игрока
-    color: 'red',
+    size: 10,
+    color: 'white',
     angle: 0,
-    speed: 0.03 // Увеличиваем скорость для более быстрого движения
+    speed: 0.03
   };
   bullets = [];
   enemies = [];
   score = 0;
   gameOver = false;
   restartButton.style.display = 'none';
-  canShoot = true; // Сброс флага стрельбы
-  startButton.style.display = 'block'; // Показываем кнопку Start
-  canvas.style.display = 'none'; // Скрываем canvas
-  spawnIntervalTime = 1000; // Восстанавливаем начальный интервал появления врагов
+  canShoot = true;
+  startButton.style.display = 'block';
+  canvas.style.display = 'none';
+  spawnIntervalTime = 1000;
 }
 
 function handleMouseMove(event) {
@@ -353,29 +344,23 @@ function handleTouchMove(event) {
   updatePlayerPosition(touch);
 }
 
-// Add event listeners for mouse events
 canvas.addEventListener('mousemove', handleMouseMove);
 
-// Add event listeners for touch events
 canvas.addEventListener('touchmove', handleTouchMove);
 
-// Prevent scrolling on mobile devices
 document.body.addEventListener('touchmove', function(event) {
   if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
     event.preventDefault();
   }
 }, { passive: false });
 
-// Функция для центрирования кнопки Start
 function centerStartButton() {
   startButton.style.top = `${(canvas.height - startButton.offsetHeight) / 2}px`;
   startButton.style.left = `${(canvas.width - startButton.offsetWidth) / 2}px`;
 }
 
-// Центрируем кнопку Start при загрузке страницы
 window.addEventListener('load', centerStartButton);
 
-// Перерасполагаем кнопку Start при изменении размера окна
 window.addEventListener('resize', () => {
   canvas.width = window.innerWidth - 20;
   canvas.height = window.innerHeight - 20;
