@@ -57,7 +57,7 @@ let player = {
   y: canvas.height / 2,
   targetX: canvas.width / 2,
   targetY: canvas.height / 2,
-  size: 20,
+  size: 10, // Уменьшаем размер игрока
   color: 'red',
   angle: 0,
   speed: 0.02 // Уменьшаем скорость для более медленного движения
@@ -75,6 +75,7 @@ const shootCooldown = 200; // Время перезарядки в миллис�
 
 let shootIntervalId = null; // Идентификатор интервала для стрельбы
 let spawnIntervalId = null; // Идентификатор интервала для спавна врагов
+let spawnIntervalTime = 1000; // Время спавна врагов (начальное значение)
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -104,9 +105,9 @@ function spawnEnemy() {
   enemies.push({
     x: x,
     y: y,
-    size: 15,
+    size: 10, // Уменьшаем размер врагов
     color: 'green',
-    speed: 1 + Math.random()
+    speed: 1 + Math.random() // Базовая скорость врагов
   });
 }
 
@@ -124,14 +125,80 @@ function shootBullet() {
   // Вычисляем угол стрельбы в противоположную сторону от курсора
   const shootAngle = player.angle + Math.PI;
 
-  bullets.push({
-    x: player.x,
-    y: player.y,
-    size: 5,
-    color: 'yellow',
-    speed: 10,
-    angle: shootAngle
-  });
+  // Проверяем, достиг ли игрок отметки в 20 убитых врагов
+  if (score >= 50) {
+    // Стрельба в четыре направления: прямо и перпендикулярно
+    const angleOffset = Math.PI / 2; // 90 градусов в радианах (Math.PI / 180 * 90)
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle
+    });
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle - angleOffset
+    });
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle + angleOffset
+    });
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle + Math.PI
+    });
+  } else if (score >= 20) {
+    // Стрельба в два направления: прямо и на 20 градусов в стороны
+    const angleOffset = Math.PI / 9; // 20 градусов в радианах (Math.PI / 180 * 20)
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle
+    });
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle - angleOffset
+    });
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle + angleOffset
+    });
+  } else {
+    // Стрельба в одно направление
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      size: 5,
+      color: 'yellow',
+      speed: 10,
+      angle: shootAngle
+    });
+  }
 
   setTimeout(() => {
     canShoot = true;
@@ -164,6 +231,19 @@ function updateEnemies() {
         enemies.splice(index, 1);
         bullets.splice(bIndex, 1);
         score++;
+
+        // Проверяем достижение апгрейдов
+        if (score === 20) {
+          // Апгрейд стрельбы в два направления
+          console.log("Upgrade to shoot in two directions");
+        } else if (score === 50) {
+          // Апгрейд стрельбы в четыре направления
+          console.log("Upgrade to shoot in four directions");
+          // Ускоряем появление врагов
+          spawnIntervalTime = 500; // Уменьшаем интервал появления врагов
+          clearInterval(spawnIntervalId);
+          spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime);
+        }
       }
     });
   });
@@ -242,7 +322,7 @@ function startGame() {
   canvas.style.display = 'block'; // Показываем canvas
   gameLoop();
   shootIntervalId = setInterval(shootBullet, shootCooldown); // Запускаем автоматическую стрельбу
-  spawnIntervalId = setInterval(spawnEnemy, 1000); // Запускаем спавн врагов
+  spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime); // Запускаем спавн врагов
 }
 
 function restartGame() {
@@ -255,7 +335,7 @@ function restartGame() {
     y: canvas.height / 2,
     targetX: canvas.width / 2,
     targetY: canvas.height / 2,
-    size: 20,
+    size: 10, // Уменьшаем размер игрока
     color: 'red',
     angle: 0,
     speed: 0.02 // Уменьшаем скорость для более медленного движения
@@ -268,6 +348,7 @@ function restartGame() {
   canShoot = true; // Сброс флага стрельбы
   startButton.style.display = 'block'; // Показываем кнопку Start
   canvas.style.display = 'none'; // Скрываем canvas
+  spawnIntervalTime = 1000; // Восстанавливаем начальный интервал появления врагов
 }
 
 function handleMouseMove(event) {
