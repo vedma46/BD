@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Badass_Robotic (9:16 Portrait)</title>
+  <title>Badass_Robotic (9:16 Portrait with Images)</title>
   <style>
     html, body {
       margin: 0;
@@ -13,7 +13,7 @@
       width: 100%;
       height: 100%;
     }
-    /* Канвас имеет фиксированный логический размер 1080×1920 (9:16) */
+    /* Логическая область игры 1080×1920 (9:16) */
     #gameCanvas {
       position: absolute;
       top: 0;
@@ -24,51 +24,66 @@
       border: 1px solid #fff;
       display: none;
     }
-    /* Кнопки позиционируются поверх канваса */
+    /* Кнопки и логотип */
     #startButton, #restartButton {
       position: absolute;
-      z-index: 10;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
+      z-index: 11;
       border: none;
-      border-radius: 5px;
+      background: none;
+      cursor: pointer;
     }
-    #startButton {
-      padding: 20px 40px;
-      font-size: 24px;
-    }
-    #restartButton {
-      padding: 10px 20px;
-      font-size: 16px;
-      bottom: 20px;
+    /* Пример: логотип вверху по центру */
+    #logo {
+      position: absolute;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: none;
+      z-index: 12;
     }
   </style>
 </head>
 <body>
+  <!-- Логотип -->
+  <img id="logo" src="logo.png" alt="Logo" />
+
+  <!-- Канвас игры -->
   <canvas id="gameCanvas" width="1080" height="1920"></canvas>
-  <button id="startButton" onclick="startGame()">Start Game</button>
-  <button id="restartButton" onclick="restartGame()">Restart Game</button>
+
+  <!-- Кнопки старт и рестарт (заменяем содержимое кнопок на изображения) -->
+  <button id="startButton" onclick="startGame()">
+    <img src="start.png" alt="Start" />
+  </button>
+  <button id="restartButton" onclick="restartGame()">
+    <img src="restart.png" alt="Restart" />
+  </button>
+
   <script>
+    // Загружаем изображения
+    const backgroundImage = new Image();
+    backgroundImage.src = "background.png";
+    const playerImage = new Image();
+    playerImage.src = "player.png";
+    const enemyImage = new Image();
+    enemyImage.src = "enemy.png";
+    const bulletImage = new Image();
+    bulletImage.src = "bullet.png";
+
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const startButton = document.getElementById("startButton");
     const restartButton = document.getElementById("restartButton");
 
-    // Логическое разрешение игры (портрет, 9:16)
+    // Логическое разрешение игры
     const GAME_WIDTH = 1080;
     const GAME_HEIGHT = 1920;
 
+    // Размеры объектов увеличены для лучшей видимости
     let player = {
       x: GAME_WIDTH / 2,
       y: GAME_HEIGHT / 2,
       targetX: GAME_WIDTH / 2,
       targetY: GAME_HEIGHT / 2,
-      size: 10,
-      color: "#55489a",
+      size: 15, // измените, если нужно
       angle: 0,
       speed: 0.025
     };
@@ -77,7 +92,6 @@
     let enemies = [];
     let score = 0;
     let gameOver = false;
-
     let canShoot = true;
     const shootCooldown = 200;
     let shootIntervalId = null;
@@ -109,7 +123,6 @@
           y = getRandomInt(0, GAME_HEIGHT);
           break;
       }
-      // Меняем характеристики врагов в зависимости от счета
       let baseSpeed = 1 + Math.random();
       let enemyHealth = 1;
       if (score >= 50 && score < 100) {
@@ -121,11 +134,11 @@
         baseSpeed *= 2;
         enemyHealth = 3;
       }
+      // Используем enemyImage вместо отрисовки круга
       enemies.push({
         x: x,
         y: y,
-        size: 10,
-        color: "#9a487c",
+        size: 15,
         speed: baseSpeed,
         health: enemyHealth
       });
@@ -133,7 +146,7 @@
 
     function updatePlayerPosition(event) {
       const rect = canvas.getBoundingClientRect();
-      // Вычисляем масштаб по оси X (одинаков с Y, так как масштабирование равномерное)
+      // Масштабирование координат (масштаб равномерный)
       const scale = GAME_WIDTH / rect.width;
       player.targetX = (event.clientX - rect.left) * scale;
       player.targetY = (event.clientY - rect.top) * scale;
@@ -144,31 +157,25 @@
       if (!canShoot) return;
       canShoot = false;
       const shootAngle = player.angle + Math.PI;
-
-      // Система апгрейдов оружия по количеству убийств
       if (score >= 200) {
-        // Ультимативный режим: радиальный залп из 12 пуль с пробитием
         let numBullets = 12;
         for (let i = 0; i < numBullets; i++) {
           let angle = (2 * Math.PI / numBullets) * i;
           bullets.push({
             x: player.x,
             y: player.y,
-            size: 5,
-            color: "red",
+            size: 7,
             speed: 12,
             angle: angle,
             pierceCount: 3
           });
         }
       } else if (score >= 100) {
-        // Режим с пробивающими пулями: двойной выстрел с небольшим отклонением
         const angleOffset = Math.PI / 9;
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "#86dc12",
+          size: 7,
           speed: 10,
           angle: shootAngle - angleOffset,
           pierceCount: 2
@@ -176,78 +183,66 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "#86dc12",
+          size: 7,
           speed: 10,
           angle: shootAngle + angleOffset,
           pierceCount: 2
         });
       } else if (score >= 50) {
-        // Четырёхсторонний выстрел с широким угловым разбросом
         const angleOffset = Math.PI / 4;
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "yellow",
+          size: 7,
           speed: 10,
           angle: shootAngle
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "yellow",
+          size: 7,
           speed: 10,
           angle: shootAngle - angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "yellow",
+          size: 7,
           speed: 10,
           angle: shootAngle + angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "yellow",
+          size: 7,
           speed: 10,
           angle: shootAngle + Math.PI
         });
       } else if (score >= 20) {
-        // Двойной выстрел с небольшим угловым отклонением (±10°)
         const angleOffset = Math.PI / 18;
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "#86dc12",
+          size: 7,
           speed: 10,
           angle: shootAngle - angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "#86dc12",
+          size: 7,
           speed: 10,
           angle: shootAngle + angleOffset
         });
       } else {
-        // Базовый одиночный выстрел
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 5,
-          color: "#86dc12",
+          size: 7,
           speed: 10,
           angle: shootAngle
         });
       }
-
       setTimeout(() => {
         canShoot = true;
       }, shootCooldown);
@@ -280,7 +275,6 @@
             if (enemy.health <= 0) {
               enemies.splice(index, 1);
               score++;
-
               if (score === 20) {
                 console.log("Апгрейд: двойной выстрел");
               } else if (score === 50) {
@@ -313,35 +307,38 @@
       });
     }
 
+    // Функция отрисовки фона
+    function drawBackground() {
+      ctx.drawImage(backgroundImage, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+    }
+
+    // Отрисовка игрока с использованием playerImage
     function drawPlayer() {
       ctx.save();
       ctx.translate(player.x, player.y);
       ctx.rotate(player.angle);
-      ctx.fillStyle = player.color;
-      ctx.beginPath();
-      ctx.moveTo(0, -player.size);
-      ctx.lineTo(-player.size, player.size);
-      ctx.lineTo(player.size, player.size);
-      ctx.closePath();
-      ctx.fill();
+      ctx.drawImage(playerImage, -player.size, -player.size, player.size * 2, player.size * 2);
       ctx.restore();
     }
 
-    function drawBullets() {
-      bullets.forEach(bullet => {
-        ctx.fillStyle = bullet.color;
-        ctx.beginPath();
-        ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
-        ctx.fill();
+    // Отрисовка врагов с использованием enemyImage
+    function drawEnemies() {
+      enemies.forEach(enemy => {
+        ctx.save();
+        ctx.translate(enemy.x, enemy.y);
+        ctx.drawImage(enemyImage, -enemy.size, -enemy.size, enemy.size * 2, enemy.size * 2);
+        ctx.restore();
       });
     }
 
-    function drawEnemies() {
-      enemies.forEach(enemy => {
-        ctx.fillStyle = enemy.color;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
-        ctx.fill();
+    // Отрисовка пуль с использованием bulletImage
+    function drawBullets() {
+      bullets.forEach(bullet => {
+        ctx.save();
+        ctx.translate(bullet.x, bullet.y);
+        ctx.rotate(bullet.angle);
+        ctx.drawImage(bulletImage, -bullet.size, -bullet.size, bullet.size * 2, bullet.size * 2);
+        ctx.restore();
       });
     }
 
@@ -364,6 +361,7 @@
         return;
       }
       ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      drawBackground();
       player.x += (player.targetX - player.x) * player.speed;
       player.y += (player.targetY - player.y) * player.speed;
       drawPlayer();
@@ -391,8 +389,7 @@
         y: GAME_HEIGHT / 2,
         targetX: GAME_WIDTH / 2,
         targetY: GAME_HEIGHT / 2,
-        size: 10,
-        color: "#55489a",
+        size: 15,
         angle: 0,
         speed: 0.03
       };
@@ -413,27 +410,21 @@
 
     function handleTouchMove(event) {
       event.preventDefault();
-      const touch = event.touches[0];
-      updatePlayerPosition(touch);
+      updatePlayerPosition(event.touches[0]);
     }
 
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("touchmove", handleTouchMove);
-    document.body.addEventListener(
-      "touchmove",
-      function(event) {
-        if (event.target.tagName !== "INPUT" && event.target.tagName !== "TEXTAREA") {
-          event.preventDefault();
-        }
-      },
-      { passive: false }
-    );
+    document.body.addEventListener("touchmove", function(event) {
+      if (event.target.tagName !== "INPUT" && event.target.tagName !== "TEXTAREA") {
+        event.preventDefault();
+      }
+    }, { passive: false });
 
-    // Функция масштабирования: вычисляем масштаб так, чтобы логическая область 1080×1920 (9:16) вписывалась в окно
+    // Масштабирование канваса для сохранения пропорций (9:16)
     function resizeCanvas() {
       const scale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
       canvas.style.transform = `scale(${scale})`;
-      // Центрируем канвас по горизонтали и вертикали
       canvas.style.left = `${(window.innerWidth - GAME_WIDTH * scale) / 2}px`;
       canvas.style.top = `${(window.innerHeight - GAME_HEIGHT * scale) / 2}px`;
     }
