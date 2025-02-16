@@ -32,7 +32,7 @@
       background: none;
       cursor: pointer;
     }
-    /* Логотип в стартовом меню */
+    /* Логотип в стартовом меню (отступ сверху 150px) */
     #logo {
       position: absolute;
       top: 150px;
@@ -62,6 +62,22 @@
       left: 50%;
       transform: translate(-50%, -50%);
     }
+    /* Кнопка переключения музыки (30×30) – позиционирование зададим через JS */
+    #musicToggle {
+      position: absolute;
+      z-index: 14;
+      border: none;
+      background: none;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: none;
+    }
+    #musicToggle img {
+      width: 15px;
+      height: 15px;
+    }
     /* Ключевые кадры анимаций */
     @keyframes flyInLogo {
       from { opacity: 0; transform: translate(-50%, -200%); }
@@ -83,10 +99,19 @@
   </style>
 </head>
 <body>
-  <!-- Логотип стартового меню (изначально с классом animate для первого появления) -->
+  <!-- Логотип стартового меню -->
   <img id="logo" class="animate" src="logo.png" alt="Logo">
+  <!-- Кнопка переключения музыки -->
+  <button id="musicToggle" onclick="toggleMusic()">
+    <img id="musicToggleImg" src="on.png" alt="Toggle Music">
+  </button>
   <!-- Изображение Game Over -->
   <img id="gameOverImg" src="gameover.png" alt="Game Over">
+  <!-- Фоновая музыка -->
+  <audio id="bgMusic" preload="auto" loop>
+    <source src="music.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
   <!-- Канвас игры -->
   <canvas id="gameCanvas" width="1080" height="1920"></canvas>
   <!-- Кнопки старт и рестарт -->
@@ -114,6 +139,9 @@
     const restartButton = document.getElementById("restartButton");
     const logo = document.getElementById("logo");
     const gameOverImg = document.getElementById("gameOverImg");
+    const bgMusic = document.getElementById("bgMusic");
+    const musicToggle = document.getElementById("musicToggle");
+    const musicToggleImg = document.getElementById("musicToggleImg");
 
     // Логическое разрешение игры (портрет, 9:16)
     const GAME_WIDTH = 1080;
@@ -122,7 +150,7 @@
     // Флаг, показывающий, запущена ли игра
     let gameStarted = false;
 
-    // Увеличенные размеры объектов:
+    // Размеры объектов:
     // Игрок: size = 30 (отрисовывается как 60×60)
     // Враг: size = 30 (отрисовывается как 60×60)
     // Пуля: size = 14 (отрисовывается как 28×28)
@@ -212,7 +240,7 @@
             x: player.x,
             y: player.y,
             size: 14,
-            speed: 8,
+            speed: 12,
             angle: angle,
             pierceCount: 3
           });
@@ -389,24 +417,22 @@
       });
     }
 
-    // Измените размер шрифта и отступ по вашему желанию
+    // Рисуем счет: отступ 20 по горизонтали, 50 по вертикали, шрифт 40px Arial
     function drawScore() {
       ctx.fillStyle = "white";
       ctx.font = "40px Arial";
       ctx.fillText(`Score: ${score}`, 20, 50);
     }
 
-    // При Game Over вместо текста показываем изображение gameover.png и кнопку рестарта.
-    // При этом счет остается видимым.
+    // При Game Over показываем изображение gameover.png и кнопку рестарта (с анимацией)
     function drawGameOver() {
-      // Добавляем класс анимации для появления элементов Game Over
       gameOverImg.classList.add("animate");
       restartButton.classList.add("animate");
       gameOverImg.style.display = "block";
       restartButton.style.display = "block";
     }
 
-    // Игровой цикл: если игра запущена, обновляем объекты; если Game Over – показываем меню Game Over.
+    // Игровой цикл
     function gameLoop() {
       ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
       drawBackground();
@@ -430,7 +456,6 @@
 
     function startGame() {
       gameStarted = true;
-      // Скрываем меню (логотип, кнопка старт) и сбрасываем анимацию для Game Over элементов
       logo.style.display = "none";
       startButton.style.display = "none";
       gameOverImg.style.display = "none";
@@ -445,16 +470,17 @@
       if (spawnIntervalId) clearInterval(spawnIntervalId);
       shootIntervalId = setInterval(shootBullet, shootCooldown);
       spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime);
+      bgMusic.play();
+      // Показываем кнопку музыки
+      musicToggle.style.display = "block";
     }
 
     function restartGame() {
-      // При рестарте возвращаем стартовое меню (логотип и кнопка старт) с анимацией
       gameStarted = false;
       logo.style.display = "block";
       startButton.style.display = "block";
       restartButton.style.display = "none";
       gameOverImg.style.display = "none";
-      // Сбрасываем состояние игры
       gameOver = false;
       score = 0;
       bullets = [];
@@ -462,6 +488,18 @@
       if (shootIntervalId) clearInterval(shootIntervalId);
       if (spawnIntervalId) clearInterval(spawnIntervalId);
       spawnIntervalTime = 1000;
+      // Скрываем кнопку музыки (она появится при новом старте)
+      musicToggle.style.display = "none";
+    }
+
+    function toggleMusic() {
+      if (bgMusic.paused) {
+        bgMusic.play();
+        musicToggleImg.src = "on.png";
+      } else {
+        bgMusic.pause();
+        musicToggleImg.src = "off.png";
+      }
     }
 
     function handleMouseMove(event) {
@@ -487,6 +525,11 @@
       canvas.style.transform = `scale(${scale})`;
       canvas.style.left = `${(window.innerWidth - GAME_WIDTH * scale) / 2}px`;
       canvas.style.top = `${(window.innerHeight - GAME_HEIGHT * scale) / 2}px`;
+      // Располагаем кнопку музыки в правом верхнем углу игрового поля
+      const canvasLeft = (window.innerWidth - GAME_WIDTH * scale) / 2;
+      const canvasTop = (window.innerHeight - GAME_HEIGHT * scale) / 2;
+      musicToggle.style.left = `${canvasLeft + (GAME_WIDTH * scale) - 40}px`;
+      musicToggle.style.top = `${canvasTop + 10}px`;
     }
 
     window.addEventListener("load", () => {
