@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Badass_Robotic (9:16 Portrait with Images)</title>
+  <title>Badass_Robotic</title>
   <style>
     html, body {
       margin: 0;
@@ -22,9 +22,9 @@
       height: 1920px;
       transform-origin: top left;
       border: 1px solid #fff;
-      display: none;
+      display: block;
     }
-    /* Кнопки и логотип */
+    /* Элементы меню */
     #startButton, #restartButton {
       position: absolute;
       z-index: 11;
@@ -32,29 +32,51 @@
       background: none;
       cursor: pointer;
     }
-    /* Пример: логотип вверху по центру */
+    /* Логотип в стартовом меню */
     #logo {
       position: absolute;
-      top: 20px;
+      top: 150px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
     }
+    /* Изображение Game Over – чуть выше центра */
+    #gameOverImg {
+      display: none;
+      position: absolute;
+      z-index: 13;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* Кнопка старт – в стартовом меню */
+    #startButton {
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* Кнопка рестарта – показывается при окончании игры, ниже */
+    #restartButton {
+      display: none;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
   </style>
 </head>
 <body>
-  <!-- Логотип -->
-  <img id="logo" src="logo.png" alt="Logo" />
-
+  <!-- Логотип стартового меню -->
+  <img id="logo" src="logo.png" alt="Logo">
+  <!-- Изображение Game Over -->
+  <img id="gameOverImg" src="gameover.png" alt="Game Over">
   <!-- Канвас игры -->
   <canvas id="gameCanvas" width="1080" height="1920"></canvas>
-
-  <!-- Кнопки старт и рестарт (заменяем содержимое кнопок на изображения) -->
+  <!-- Кнопки старт и рестарт -->
   <button id="startButton" onclick="startGame()">
-    <img src="start.png" alt="Start" />
+    <img src="start.png" alt="Start">
   </button>
   <button id="restartButton" onclick="restartGame()">
-    <img src="restart.png" alt="Restart" />
+    <img src="restart.png" alt="Restart">
   </button>
 
   <script>
@@ -72,18 +94,26 @@
     const ctx = canvas.getContext("2d");
     const startButton = document.getElementById("startButton");
     const restartButton = document.getElementById("restartButton");
+    const logo = document.getElementById("logo");
+    const gameOverImg = document.getElementById("gameOverImg");
 
-    // Логическое разрешение игры
+    // Логическое разрешение игры (портрет, 9:16)
     const GAME_WIDTH = 1080;
     const GAME_HEIGHT = 1920;
 
-    // Размеры объектов увеличены для лучшей видимости
+    // Флаг, показывающий, запущена ли игра
+    let gameStarted = false;
+
+    // Размеры объектов увеличены:
+    // Игрок: size = 30 (отрисовывается как 60×60)
+    // Враг: size = 30 (отрисовывается как 60×60)
+    // Пуля: size = 14 (отрисовывается как 28×28)
     let player = {
       x: GAME_WIDTH / 2,
       y: GAME_HEIGHT / 2,
       targetX: GAME_WIDTH / 2,
       targetY: GAME_HEIGHT / 2,
-      size: 15, // измените, если нужно
+      size: 30,
       angle: 0,
       speed: 0.025
     };
@@ -134,19 +164,18 @@
         baseSpeed *= 2;
         enemyHealth = 3;
       }
-      // Используем enemyImage вместо отрисовки круга
       enemies.push({
         x: x,
         y: y,
-        size: 15,
+        size: 30,
         speed: baseSpeed,
         health: enemyHealth
       });
     }
 
     function updatePlayerPosition(event) {
+      if (!gameStarted) return;
       const rect = canvas.getBoundingClientRect();
-      // Масштабирование координат (масштаб равномерный)
       const scale = GAME_WIDTH / rect.width;
       player.targetX = (event.clientX - rect.left) * scale;
       player.targetY = (event.clientY - rect.top) * scale;
@@ -164,7 +193,7 @@
           bullets.push({
             x: player.x,
             y: player.y,
-            size: 7,
+            size: 14,
             speed: 12,
             angle: angle,
             pierceCount: 3
@@ -175,7 +204,7 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle - angleOffset,
           pierceCount: 2
@@ -183,7 +212,7 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle + angleOffset,
           pierceCount: 2
@@ -193,28 +222,28 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle - angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle + angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle + Math.PI
         });
@@ -223,14 +252,14 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle - angleOffset
         });
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle + angleOffset
         });
@@ -238,7 +267,7 @@
         bullets.push({
           x: player.x,
           y: player.y,
-          size: 7,
+          size: 14,
           speed: 10,
           angle: shootAngle
         });
@@ -307,12 +336,11 @@
       });
     }
 
-    // Функция отрисовки фона
+    // Фон всегда отрисовывается
     function drawBackground() {
       ctx.drawImage(backgroundImage, 0, 0, GAME_WIDTH, GAME_HEIGHT);
     }
 
-    // Отрисовка игрока с использованием playerImage
     function drawPlayer() {
       ctx.save();
       ctx.translate(player.x, player.y);
@@ -321,17 +349,18 @@
       ctx.restore();
     }
 
-    // Отрисовка врагов с использованием enemyImage
+    // Враги поворачиваются лицом к игроку
     function drawEnemies() {
       enemies.forEach(enemy => {
+        let enemyAngle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
         ctx.save();
         ctx.translate(enemy.x, enemy.y);
+        ctx.rotate(enemyAngle);
         ctx.drawImage(enemyImage, -enemy.size, -enemy.size, enemy.size * 2, enemy.size * 2);
         ctx.restore();
       });
     }
 
-    // Отрисовка пуль с использованием bulletImage
     function drawBullets() {
       bullets.forEach(bullet => {
         ctx.save();
@@ -344,63 +373,67 @@
 
     function drawScore() {
       ctx.fillStyle = "white";
-      ctx.font = "20px Arial";
-      ctx.fillText(`Score: ${score}`, 10, 30);
+      ctx.font = "40px Arial";
+      ctx.fillText(`Score: ${score}`, 20, 50);
     }
 
+    // Вместо отрисовки текста, при Game Over показываем изображение gameover.png и кнопку рестарта
     function drawGameOver() {
-      ctx.fillStyle = "white";
-      ctx.font = "40px Arial";
-      ctx.fillText("Game Over", GAME_WIDTH / 2 - 100, GAME_HEIGHT / 2);
+      gameOverImg.style.display = "block";
       restartButton.style.display = "block";
     }
 
+    // Игровой цикл: если игра запущена, обновляем объекты; если Game Over – показываем меню Game Over.
     function gameLoop() {
-      if (gameOver) {
-        drawGameOver();
-        return;
-      }
       ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
       drawBackground();
-      player.x += (player.targetX - player.x) * player.speed;
-      player.y += (player.targetY - player.y) * player.speed;
-      drawPlayer();
-      drawBullets();
-      drawEnemies();
-      drawScore();
-      updateBullets();
-      updateEnemies();
+      if (gameStarted) {
+        if (!gameOver) {
+          player.x += (player.targetX - player.x) * player.speed;
+          player.y += (player.targetY - player.y) * player.speed;
+          drawPlayer();
+          drawBullets();
+          drawEnemies();
+          drawScore();
+          updateBullets();
+          updateEnemies();
+        } else {
+          drawGameOver();
+        }
+      }
       requestAnimationFrame(gameLoop);
     }
 
     function startGame() {
+      // При старте устанавливаем флаг, скрываем меню и запускаем интервалы
+      gameStarted = true;
+      logo.style.display = "none";
       startButton.style.display = "none";
-      canvas.style.display = "block";
-      gameLoop();
+      gameOverImg.style.display = "none";
+      restartButton.style.display = "none";
+      gameOver = false;
+      score = 0;
+      bullets = [];
+      enemies = [];
+      if (shootIntervalId) clearInterval(shootIntervalId);
+      if (spawnIntervalId) clearInterval(spawnIntervalId);
       shootIntervalId = setInterval(shootBullet, shootCooldown);
       spawnIntervalId = setInterval(spawnEnemy, spawnIntervalTime);
     }
 
     function restartGame() {
-      if (shootIntervalId) clearInterval(shootIntervalId);
-      if (spawnIntervalId) clearInterval(spawnIntervalId);
-      player = {
-        x: GAME_WIDTH / 2,
-        y: GAME_HEIGHT / 2,
-        targetX: GAME_WIDTH / 2,
-        targetY: GAME_HEIGHT / 2,
-        size: 15,
-        angle: 0,
-        speed: 0.03
-      };
+      // При рестарте возвращаем стартовое меню (с логотипом и кнопкой старт)
+      gameStarted = false;
+      logo.style.display = "block";
+      startButton.style.display = "block";
+      restartButton.style.display = "none";
+      gameOverImg.style.display = "none";
+      gameOver = false;
+      score = 0;
       bullets = [];
       enemies = [];
-      score = 0;
-      gameOver = false;
-      restartButton.style.display = "none";
-      canShoot = true;
-      startButton.style.display = "block";
-      canvas.style.display = "none";
+      if (shootIntervalId) clearInterval(shootIntervalId);
+      if (spawnIntervalId) clearInterval(spawnIntervalId);
       spawnIntervalTime = 1000;
     }
 
@@ -429,20 +462,13 @@
       canvas.style.top = `${(window.innerHeight - GAME_HEIGHT * scale) / 2}px`;
     }
 
-    // Центрирование кнопки старта по экрану
-    function centerStartButton() {
-      startButton.style.top = `${(window.innerHeight - startButton.offsetHeight) / 2}px`;
-      startButton.style.left = `${(window.innerWidth - startButton.offsetWidth) / 2}px`;
-    }
-
     window.addEventListener("load", () => {
       resizeCanvas();
-      centerStartButton();
+      gameLoop();
     });
 
     window.addEventListener("resize", () => {
       resizeCanvas();
-      centerStartButton();
     });
   </script>
 </body>
